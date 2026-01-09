@@ -29,7 +29,7 @@
     "change_if_to_case": true,
     "dynpro_checks": true,
     "easy_to_find_messages": true,
-    "align_type_expressions": false,
+    "align_type_expressions": true,
     "no_external_form_calls": true,
     "superfluous_value": true,
     "cyclic_oo": false,

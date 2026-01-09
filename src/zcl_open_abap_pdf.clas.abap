@@ -2,15 +2,15 @@ CLASS zcl_open_abap_pdf DEFINITION PUBLIC.
   PUBLIC SECTION.
     TYPES:
       BEGIN OF ty_font,
-        name      TYPE string,
-        id        TYPE i,
-        obj_id    TYPE i,
+        name   TYPE string,
+        id     TYPE i,
+        obj_id TYPE i,
       END OF ty_font,
       ty_fonts TYPE STANDARD TABLE OF ty_font WITH DEFAULT KEY,
 
       BEGIN OF ty_object,
-        id        TYPE i,
-        content   TYPE string,
+        id      TYPE i,
+        content TYPE string,
       END OF ty_object,
       ty_objects TYPE STANDARD TABLE OF ty_object WITH DEFAULT KEY,
 
@@ -155,23 +155,23 @@ CLASS zcl_open_abap_pdf DEFINITION PUBLIC.
     DATA mv_line_width TYPE f.
 
     METHODS add_object
-      IMPORTING iv_content       TYPE string
-      RETURNING VALUE(rv_id)     TYPE i.
+      IMPORTING iv_content   TYPE string
+      RETURNING VALUE(rv_id) TYPE i.
 
     METHODS escape_string
-      IMPORTING iv_text          TYPE string
+      IMPORTING iv_text           TYPE string
       RETURNING VALUE(rv_escaped) TYPE string.
 
     METHODS get_font_id
-      IMPORTING iv_name          TYPE string
-      RETURNING VALUE(rv_id)     TYPE i.
+      IMPORTING iv_name      TYPE string
+      RETURNING VALUE(rv_id) TYPE i.
 
     METHODS ensure_font
-      IMPORTING iv_name          TYPE string.
+      IMPORTING iv_name TYPE string.
 
     METHODS transform_y
-      IMPORTING iv_y             TYPE f
-      RETURNING VALUE(rv_y)      TYPE f.
+      IMPORTING iv_y        TYPE f
+      RETURNING VALUE(rv_y) TYPE f.
 
     METHODS format_number
       IMPORTING iv_number        TYPE f
