@@ -195,40 +195,33 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD add_page.
-    DATA ls_page TYPE ty_page.
-
     mv_current_page = lines( mt_pages ) + 1.
-    ls_page-id = mv_current_page.
-    ls_page-width = iv_width.
-    ls_page-height = iv_height.
-    ls_page-content = ''.
+    DATA(ls_page) = VALUE ty_page(
+      id = mv_current_page
+      width = iv_width
+      height = iv_height
+      content = '' ).
     APPEND ls_page TO mt_pages.
 
     ro_pdf = me.
   ENDMETHOD.
 
   METHOD set_font.
-    DATA lv_content TYPE string.
-
     ensure_font( iv_name ).
     mv_current_font = iv_name.
     mv_current_font_size = iv_size.
     mv_current_font_id = get_font_id( iv_name ).
 
-    lv_content = |/F{ mv_current_font_id } { format_number( iv_size ) } Tf|.
+    DATA(lv_content) = |/F{ mv_current_font_id } { format_number( iv_size ) } Tf|.
     append_to_page( lv_content ).
 
     ro_pdf = me.
   ENDMETHOD.
 
   METHOD set_text_color.
-    DATA lv_r TYPE f.
-    DATA lv_g TYPE f.
-    DATA lv_b TYPE f.
-
-    lv_r = iv_r / 255.
-    lv_g = iv_g / 255.
-    lv_b = iv_b / 255.
+    DATA(lv_r) = CONV f( iv_r / 255 ).
+    DATA(lv_g) = CONV f( iv_g / 255 ).
+    DATA(lv_b) = CONV f( iv_b / 255 ).
 
     mv_text_color = |{ format_number( lv_r ) } { format_number( lv_g ) } { format_number( lv_b ) } rg|.
     append_to_page( mv_text_color ).
@@ -237,13 +230,9 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD set_draw_color.
-    DATA lv_r TYPE f.
-    DATA lv_g TYPE f.
-    DATA lv_b TYPE f.
-
-    lv_r = iv_r / 255.
-    lv_g = iv_g / 255.
-    lv_b = iv_b / 255.
+    DATA(lv_r) = CONV f( iv_r / 255 ).
+    DATA(lv_g) = CONV f( iv_g / 255 ).
+    DATA(lv_b) = CONV f( iv_b / 255 ).
 
     mv_draw_color = |{ format_number( lv_r ) } { format_number( lv_g ) } { format_number( lv_b ) } RG|.
     append_to_page( mv_draw_color ).
@@ -252,13 +241,9 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD set_fill_color.
-    DATA lv_r TYPE f.
-    DATA lv_g TYPE f.
-    DATA lv_b TYPE f.
-
-    lv_r = iv_r / 255.
-    lv_g = iv_g / 255.
-    lv_b = iv_b / 255.
+    DATA(lv_r) = CONV f( iv_r / 255 ).
+    DATA(lv_g) = CONV f( iv_g / 255 ).
+    DATA(lv_b) = CONV f( iv_b / 255 ).
 
     mv_fill_color = |{ format_number( lv_r ) } { format_number( lv_g ) } { format_number( lv_b ) } rg|.
 
@@ -272,39 +257,27 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD text.
-    DATA lv_y TYPE f.
-    DATA lv_escaped TYPE string.
-    DATA lv_content TYPE string.
-
-    lv_y = transform_y( iv_y ).
-    lv_escaped = escape_string( iv_text ).
-
-    lv_content = |BT { format_number( iv_x ) } { format_number( lv_y ) } Td ({ lv_escaped }) Tj ET|.
+    DATA(lv_y) = transform_y( iv_y ).
+    DATA(lv_escaped) = escape_string( iv_text ).
+    DATA(lv_content) = |BT { format_number( iv_x ) } { format_number( lv_y ) } Td ({ lv_escaped }) Tj ET|.
     append_to_page( lv_content ).
 
     ro_pdf = me.
   ENDMETHOD.
 
   METHOD line.
-    DATA lv_y1 TYPE f.
-    DATA lv_y2 TYPE f.
-    DATA lv_content TYPE string.
-
-    lv_y1 = transform_y( iv_y1 ).
-    lv_y2 = transform_y( iv_y2 ).
-
-    lv_content = |{ format_number( iv_x1 ) } { format_number( lv_y1 ) } m { format_number( iv_x2 ) } { format_number( lv_y2 ) } l S|.
+    DATA(lv_y1) = transform_y( iv_y1 ).
+    DATA(lv_y2) = transform_y( iv_y2 ).
+    DATA(lv_content) = |{ format_number( iv_x1 ) } { format_number( lv_y1 ) } m { format_number( iv_x2 ) } { format_number( lv_y2 ) } l S|.
     append_to_page( lv_content ).
 
     ro_pdf = me.
   ENDMETHOD.
 
   METHOD rect.
-    DATA lv_y TYPE f.
+    DATA(lv_y) = transform_y( iv_y + iv_height ).
     DATA lv_op TYPE string.
     DATA lv_content TYPE string.
-
-    lv_y = transform_y( iv_y + iv_height ).
 
     CASE iv_style.
       WHEN 'F'.
@@ -322,13 +295,10 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD circle.
-    DATA lv_y TYPE f.
-    DATA lv_k TYPE f.
+    DATA(lv_y) = transform_y( iv_y ).
+    DATA(lv_k) = iv_radius * '0.5523'.  " Bezier curve approximation
     DATA lv_op TYPE string.
     DATA lv_content TYPE string.
-
-    lv_y = transform_y( iv_y ).
-    lv_k = iv_radius * '0.5523'.  " Bezier curve approximation
 
     CASE iv_style.
       WHEN 'F'.
@@ -457,9 +427,7 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD render_binary.
-    DATA lv_pdf TYPE string.
-    lv_pdf = render( ).
-    rv_pdf = cl_abap_codepage=>convert_to( lv_pdf ).
+    rv_pdf = cl_abap_codepage=>convert_to( render( ) ).
   ENDMETHOD.
 
   METHOD get_page_count.
@@ -491,9 +459,9 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD add_object.
-    DATA ls_object TYPE ty_object.
-    ls_object-id = mv_next_obj_id.
-    ls_object-content = iv_content.
+    DATA(ls_object) = VALUE ty_object(
+        id = mv_next_obj_id
+        content = iv_content ).
     APPEND ls_object TO mt_objects.
     mv_next_obj_id = mv_next_obj_id + 1.
     rv_id = ls_object-id.
