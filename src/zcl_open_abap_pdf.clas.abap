@@ -1,0 +1,7 @@
+CLASS zcl_open_abap_pdf DEFINITION PUBLIC.
+  PUBLIC SECTION.
+ENDCLASS.
+
+CLASS zcl_open_abap_pdf IMPLEMENTATION.
+
+ENDCLASS.
