@@ -1,14 +1,14 @@
 CLASS ltcl_pdf_test DEFINITION FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
-    METHODS test_create FOR TESTING.
-    METHODS test_add_page FOR TESTING.
-    METHODS test_render_empty FOR TESTING.
-    METHODS test_text FOR TESTING.
-    METHODS test_multiple_pages FOR TESTING.
-    METHODS test_shapes FOR TESTING.
-    METHODS test_mm_to_pt FOR TESTING.
-    METHODS test_inch_to_pt FOR TESTING.
-    METHODS test_fluent_api FOR TESTING.
+    METHODS test_create FOR TESTING RAISING cx_static_check.
+    METHODS test_add_page FOR TESTING RAISING cx_static_check.
+    METHODS test_render_empty FOR TESTING RAISING cx_static_check.
+    METHODS test_text FOR TESTING RAISING cx_static_check.
+    METHODS test_multiple_pages FOR TESTING RAISING cx_static_check.
+    METHODS test_shapes FOR TESTING RAISING cx_static_check.
+    METHODS test_mm_to_pt FOR TESTING RAISING cx_static_check.
+    METHODS test_inch_to_pt FOR TESTING RAISING cx_static_check.
+    METHODS test_fluent_api FOR TESTING RAISING cx_static_check.
 ENDCLASS.
 
 CLASS ltcl_pdf_test IMPLEMENTATION.
