@@ -6,6 +6,7 @@
   "scripts": {
     "lint": "abaplint",
     "unit": "rm -rf output && abap_transpile && echo RUNNING && node --expose-gc output/index.mjs && echo OK",
+    "demo": "npm run test && node test/demo.mjs",
     "test": "npm run lint && npm run unit"
   },
   "repository": {
@@ -13,7 +14,7 @@
     "url": "git+https://github.com/open-abap/open-abap-pdf.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/open-abap/open-abap-pdf/issues"
   },
