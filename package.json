@@ -1,0 +1,27 @@
+{
+  "name": "open-abap-pdf",
+  "version": "1.0.0",
+  "description": "Standalone PDF generation in ABAP",
+  "main": "index.js",
+  "scripts": {
+    "lint": "abaplint",
+    "unit": "rm -rf output && abap_transpile && echo RUNNING && node --expose-gc output/index.mjs && echo OK",
+    "demo": "npm run test && node test/demo.mjs",
+    "test": "npm run lint && npm run unit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/open-abap/open-abap-pdf.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/open-abap/open-abap-pdf/issues"
+  },
+  "homepage": "https://github.com/open-abap/open-abap-pdf#readme",
+  "dependencies": {
+    "@abaplint/cli": "^2.115.15",
+    "@abaplint/runtime": "^2.12.24",
+    "@abaplint/transpiler-cli": "^2.12.24"
+  }
+}

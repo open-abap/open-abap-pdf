@@ -1,0 +1,63 @@
+%PDF-1.4
+%µ¶
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+4 0 obj
+<< /Length 610 >>
+stream
+/F3 10 Tf /F1 36 Tf 0 0.2 0.4 rg BT 50 741.89 Td (open-abap-pdf) Tj ET /F1 18 Tf 0.39 0.39 0.39 rg BT 50 701.89 Td (A Pure ABAP PDF Generation Library) Tj ET /F2 12 Tf 0 0 0 rg BT 50 641.89 Td (This demo showcases the PDF generation capabilities:) Tj ET BT 70 621.89 Td (- Multiple pages support) Tj ET BT 70 601.89 Td (- Text with different fonts and colors) Tj ET BT 70 581.89 Td (- Lines, rectangles, and circles) Tj ET BT 70 561.89 Td (- Fluent API for easy chaining) Tj ET 0 0.2 0.4 RG 2 w 50 731.89 m 400 731.89 l S /F3 10 Tf 0.59 0.59 0.59 rg BT 50 41.89 Td (Generated with open-abap-pdf | Page 1) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Length 1325 >>
+stream
+/F3 10 Tf /F1 24 Tf 0 0.2 0.4 rg BT 50 791.89 Td (Shapes Demo) Tj ET /F1 14 Tf 0 0 0 rg BT 50 741.89 Td (Rectangles:) Tj ET 0 0 0 RG 1 w 50 671.89 80 50 re S /F1 10 Tf BT 60 661.89 Td (Outlined) Tj ET 160 671.89 80 50 re f BT 175 661.89 Td (Filled) Tj ET 0.55 0 0 RG 2 w 270 671.89 80 50 re B BT 290 661.89 Td (Both) Tj ET /F1 14 Tf BT 50 611.89 Td (Circles:) Tj ET 0 0.39 0 RG 1 w 130 551.89 m 130 552.89 101 581.89 100 581.89 c 99 581.89 70 552.89 70 551.89 c 70 550.89 99 521.89 100 521.89 c 101 521.89 130 550.89 130 551.89 c S /F1 10 Tf BT 75 506.89 Td (Outlined) Tj ET 240 551.89 m 240 552.89 211 581.89 210 581.89 c 209 581.89 180 552.89 180 551.89 c 180 550.89 209 521.89 210 521.89 c 211 521.89 240 550.89 240 551.89 c f BT 193 506.89 Td (Filled) Tj ET 0.29 0 0.51 RG 3 w 350 551.89 m 350 552.89 321 581.89 320 581.89 c 319 581.89 290 552.89 290 551.89 c 290 550.89 319 521.89 320 521.89 c 321 521.89 350 550.89 350 551.89 c B BT 305 506.89 Td (Both) Tj ET /F1 14 Tf 0 0 0 rg BT 50 441.89 Td (Lines with different widths:) Tj ET 0 0 0 RG 1 w 50 421.89 m 200 421.89 l S /F1 10 Tf BT 210 418.89 Td (1pt) Tj ET 2 w 50 401.89 m 200 401.89 l S BT 210 398.89 Td (2pt) Tj ET 4 w 50 381.89 m 200 381.89 l S BT 210 378.89 Td (4pt) Tj ET /F3 10 Tf 0.59 0.59 0.59 rg BT 50 41.89 Td (Generated with open-abap-pdf | Page 2) Tj ET
+endstream
+endobj
+6 0 obj
+<< /Length 1078 >>
+stream
+/F3 10 Tf /F1 24 Tf 0 0.2 0.4 rg BT 50 791.89 Td (Fonts Demo) Tj ET 0 0 0 rg /F1 12 Tf BT 50 741.89 Td (Helvetica 12pt - The quick brown fox jumps over the lazy dog) Tj ET /F1 16 Tf BT 50 716.89 Td (Helvetica 16pt - The quick brown fox) Tj ET /F1 20 Tf BT 50 686.89 Td (Helvetica 20pt - Hello World) Tj ET /F2 12 Tf BT 50 631.89 Td (Times-Roman 12pt - The quick brown fox jumps over the lazy dog) Tj ET /F2 16 Tf BT 50 606.89 Td (Times-Roman 16pt - The quick brown fox) Tj ET /F2 20 Tf BT 50 576.89 Td (Times-Roman 20pt - Hello World) Tj ET /F3 12 Tf BT 50 521.89 Td (Courier 12pt - The quick brown fox jumps) Tj ET /F3 16 Tf BT 50 496.89 Td (Courier 16pt - Fixed width font) Tj ET /F3 20 Tf BT 50 466.89 Td (Courier 20pt - Code Style) Tj ET /F1 14 Tf 0 0 0 rg BT 50 401.89 Td (Text Colors:) Tj ET /F1 14 Tf 1 0 0 rg BT 50 371.89 Td (Red Text) Tj ET 0 0.5 0 rg BT 150 371.89 Td (Green Text) Tj ET 0 0 1 rg BT 270 371.89 Td (Blue Text) Tj ET 1 0.65 0 rg BT 380 371.89 Td (Orange Text) Tj ET /F3 10 Tf 0.59 0.59 0.59 rg BT 50 41.89 Td (Generated with open-abap-pdf | Page 3) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 10 0 R /MediaBox [0 0 595.28 841.89] /Contents 4 0 R /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> >>
+endobj
+8 0 obj
+<< /Type /Page /Parent 10 0 R /MediaBox [0 0 595.28 841.89] /Contents 5 0 R /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> >>
+endobj
+9 0 obj
+<< /Type /Page /Parent 10 0 R /MediaBox [0 0 595.28 841.89] /Contents 6 0 R /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> >>
+endobj
+10 0 obj
+<< /Type /Pages /Kids [7 0 R 8 0 R 9 0 R] /Count 3 >>
+endobj
+11 0 obj
+<< /Type /Catalog /Pages 10 0 R >>
+endobj
+xref
+0 12
+0000000000 65535 f 
+0000000013 00000 n 
+0000000083 00000 n 
+0000000155 00000 n 
+0000000223 00000 n 
+0000000884 00000 n 
+0000002261 00000 n 
+0000003391 00000 n 
+0000003544 00000 n 
+0000003697 00000 n 
+0000003850 00000 n 
+0000003920 00000 n 
+trailer
+<< /Size 12 /Root 11 0 R >>
+startxref
+3971
+%%EOF
