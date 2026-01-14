@@ -344,6 +344,8 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
     DATA lt_offsets TYPE STANDARD TABLE OF i WITH DEFAULT KEY.
     DATA lv_offset_val TYPE i.
     DATA lv_offset_str TYPE string.
+    DATA lv_page_tabix TYPE i.
+    DATA lv_obj_id TYPE i.
 
     " Reset objects for fresh render
     CLEAR mt_objects.
@@ -357,6 +359,7 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
 
     " Add page content streams and page objects
     LOOP AT mt_pages INTO ls_page.
+      lv_page_tabix = sy-tabix.
       " Prepare content stream with font setup
       lv_stream = ''.
       IF mv_current_font IS NOT INITIAL.
@@ -369,13 +372,13 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
 
       lv_content_length = strlen( lv_stream ).
       ls_page-content_id = add_object( |<< /Length { lv_content_length } >>\nstream\n{ lv_stream }\nendstream| ).
-      MODIFY mt_pages FROM ls_page INDEX sy-tabix.
+      MODIFY mt_pages FROM ls_page INDEX lv_page_tabix.
     ENDLOOP.
 
     " Build font resources string
     LOOP AT mt_fonts INTO ls_font.
       IF lv_font_resources IS NOT INITIAL.
-        lv_font_resources = lv_font_resources && ' '.
+        lv_font_resources = lv_font_resources && | |.
       ENDIF.
       lv_font_resources = lv_font_resources && |/F{ ls_font-id } { ls_font-obj_id } 0 R|.
     ENDLOOP.
@@ -383,13 +386,12 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
     " Add page objects
     lv_pages_id = mv_next_obj_id + lines( mt_pages ).
     LOOP AT mt_pages INTO ls_page.
-      ls_page-obj_id = add_object( |<< /Type /Page /Parent { lv_pages_id } 0 R /MediaBox [0 0 { format_number( ls_page-width ) } { format_number( ls_page-height ) }] /Contents { ls_page-content_id } 0 R /Resources << /Font << { lv_font_resources } >> >> >>| ).
-      MODIFY mt_pages FROM ls_page INDEX sy-tabix.
+      lv_obj_id = add_object( |<< /Type /Page /Parent { lv_pages_id } 0 R /MediaBox [0 0 { format_number( ls_page-width ) } { format_number( ls_page-height ) }] /Contents { ls_page-content_id } 0 R /Resources << /Font << { lv_font_resources } >> >> >>| ).
 
       IF lv_page_ids IS NOT INITIAL.
-        lv_page_ids = lv_page_ids && ' '.
+        lv_page_ids = lv_page_ids && | |.
       ENDIF.
-      lv_page_ids = lv_page_ids && |{ ls_page-obj_id } 0 R|.
+      lv_page_ids = lv_page_ids && |{ lv_obj_id } 0 R|.
     ENDLOOP.
 
     " Add pages object
