@@ -339,6 +339,7 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
     DATA lv_offset_str TYPE string.
     DATA lv_page_tabix TYPE i.
     DATA lv_obj_id TYPE i.
+    DATA lv_marker TYPE string.
 
     " Reset objects for fresh render
     CLEAR mt_objects.
@@ -393,8 +394,9 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
     " Add catalog
     lv_catalog_id = add_object( |<< /Type /Catalog /Pages { lv_pages_id } 0 R >>| ).
 
-    " Build PDF
-    lv_pdf = |%PDF-1.4\n%\xC2\xB5\xC2\xB6\n|.
+    " Build PDF header with binary marker (high-bit chars indicate binary content)
+    lv_marker = cl_abap_codepage=>convert_from( CONV xstring( 'C2B5C2B6' ) ).
+    lv_pdf = |%PDF-1.4\n%| && lv_marker && |\n|.
 
     " Write objects and track offsets
     LOOP AT mt_objects INTO ls_object.
