@@ -27,9 +27,7 @@ CLASS zcl_open_abap_pdf DEFINITION PUBLIC.
     CONSTANTS:
       c_pt_per_mm     TYPE f VALUE '2.83465',
       c_a4_width      TYPE f VALUE '595.28',  " 210mm in points
-      c_a4_height     TYPE f VALUE '841.89',  " 297mm in points
-      c_letter_width  TYPE f VALUE '612',   " 8.5 inches
-      c_letter_height TYPE f VALUE '792'.   " 11 inches
+      c_a4_height     TYPE f VALUE '841.89'.  " 297mm in points
 
     "! Create a new PDF document
     CLASS-METHODS create
@@ -329,7 +327,6 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
     DATA lv_page_ids TYPE string.
     DATA lv_font_resources TYPE string.
     DATA lv_xref TYPE string.
-    DATA lv_offset TYPE i.
     DATA lv_startxref TYPE i.
     DATA ls_page TYPE ty_page.
     DATA ls_font TYPE ty_font.
@@ -337,10 +334,6 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
     DATA lv_obj_count TYPE i.
     DATA lv_content_length TYPE i.
     DATA lv_stream TYPE string.
-    DATA lv_temp TYPE string.
-    DATA lv_char TYPE string.
-    DATA lv_len TYPE i.
-    DATA lv_i TYPE i.
     DATA lt_offsets TYPE STANDARD TABLE OF i WITH DEFAULT KEY.
     DATA lv_offset_val TYPE i.
     DATA lv_offset_str TYPE string.
@@ -578,7 +571,6 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD append_to_page.
-    DATA ls_page TYPE ty_page.
     FIELD-SYMBOLS <ls_page> TYPE ty_page.
 
     READ TABLE mt_pages ASSIGNING <ls_page> INDEX mv_current_page.
