@@ -12,8 +12,8 @@ CLASS zcl_open_abap_pdf DEFINITION PUBLIC.
       c_pt_per_mm     TYPE f VALUE '2.83465',
       c_a4_width      TYPE f VALUE '595.28',  " 210mm in points
       c_a4_height     TYPE f VALUE '841.89',  " 297mm in points
-      c_letter_width  TYPE f VALUE '612',     " 8.5 inches in points
-      c_letter_height TYPE f VALUE '792'.     " 11 inches in points
+      c_letter_width  TYPE f VALUE '612'  ##NEEDED,     " 8.5 inches in points
+      c_letter_height TYPE f VALUE '792'  ##NEEDED.     " 11 inches in points
 
     "! Create a new PDF document
     CLASS-METHODS create
