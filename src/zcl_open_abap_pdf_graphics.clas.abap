@@ -2,40 +2,40 @@ CLASS zcl_open_abap_pdf_graphics DEFINITION PUBLIC CREATE PUBLIC.
   PUBLIC SECTION.
     "! Draw a line from (x1, y1) to (x2, y2)
     CLASS-METHODS draw_line
-      IMPORTING iv_x1            TYPE f
-                iv_y1            TYPE f
-                iv_x2            TYPE f
-                iv_y2            TYPE f
+      IMPORTING iv_x1             TYPE f
+                iv_y1             TYPE f
+                iv_x2             TYPE f
+                iv_y2             TYPE f
       RETURNING VALUE(rv_content) TYPE string.
 
     "! Draw a rectangle
     "! @parameter iv_style | D=Draw, F=Fill, DF=Both
     CLASS-METHODS draw_rect
-      IMPORTING iv_x             TYPE f
-                iv_y             TYPE f
-                iv_width         TYPE f
-                iv_height        TYPE f
-                iv_style         TYPE string DEFAULT 'D'
+      IMPORTING iv_x              TYPE f
+                iv_y              TYPE f
+                iv_width          TYPE f
+                iv_height         TYPE f
+                iv_style          TYPE string DEFAULT 'D'
       RETURNING VALUE(rv_content) TYPE string.
 
     "! Draw a circle using Bezier curves
     CLASS-METHODS draw_circle
-      IMPORTING iv_x             TYPE f
-                iv_y             TYPE f
-                iv_radius        TYPE f
-                iv_style         TYPE string DEFAULT 'D'
+      IMPORTING iv_x              TYPE f
+                iv_y              TYPE f
+                iv_radius         TYPE f
+                iv_style          TYPE string DEFAULT 'D'
       RETURNING VALUE(rv_content) TYPE string.
 
     "! Set line width
     CLASS-METHODS set_line_width
-      IMPORTING iv_width         TYPE f
+      IMPORTING iv_width          TYPE f
       RETURNING VALUE(rv_content) TYPE string.
 
   PRIVATE SECTION.
     "! Get PDF operator for shape style
     CLASS-METHODS get_style_operator
-      IMPORTING iv_style        TYPE string
-      RETURNING VALUE(rv_op)    TYPE string.
+      IMPORTING iv_style     TYPE string
+      RETURNING VALUE(rv_op) TYPE string.
 ENDCLASS.
 
 CLASS zcl_open_abap_pdf_graphics IMPLEMENTATION.
