@@ -21,9 +21,21 @@ ENDCLASS.
 CLASS zcl_open_abap_pdf_color IMPLEMENTATION.
 
   METHOD rgb_to_pdf_string.
-    DATA(lv_r) = CONV f( iv_r / 255 ).
-    DATA(lv_g) = CONV f( iv_g / 255 ).
-    DATA(lv_b) = CONV f( iv_b / 255 ).
+    " Validate RGB values are within range (0-255)
+    DATA(lv_r_val) = COND i( WHEN iv_r < 0 THEN 0
+                               WHEN iv_r > 255 THEN 255
+                               ELSE iv_r ).
+    DATA(lv_g_val) = COND i( WHEN iv_g < 0 THEN 0
+                               WHEN iv_g > 255 THEN 255
+                               ELSE iv_g ).
+    DATA(lv_b_val) = COND i( WHEN iv_b < 0 THEN 0
+                               WHEN iv_b > 255 THEN 255
+                               ELSE iv_b ).
+
+    " Convert to PDF color space (0.0 to 1.0)
+    DATA(lv_r) = CONV f( lv_r_val / 255 ).
+    DATA(lv_g) = CONV f( lv_g_val / 255 ).
+    DATA(lv_b) = CONV f( lv_b_val / 255 ).
 
     rv_string = |{ format_number( lv_r ) } { format_number( lv_g ) } { format_number( lv_b ) } { iv_operator }|.
   ENDMETHOD.

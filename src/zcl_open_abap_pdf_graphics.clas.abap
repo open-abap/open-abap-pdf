@@ -1,5 +1,7 @@
 CLASS zcl_open_abap_pdf_graphics DEFINITION PUBLIC CREATE PUBLIC.
   PUBLIC SECTION.
+    CONSTANTS c_bezier_k TYPE f VALUE '0.5523'. " Bezier curve approximation constant for circles
+
     "! Draw a line from (x1, y1) to (x2, y2)
     CLASS-METHODS draw_line
       IMPORTING iv_x1             TYPE f
@@ -50,7 +52,7 @@ CLASS zcl_open_abap_pdf_graphics IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD draw_circle.
-    DATA(lv_k) = iv_radius * '0.5523'.  " Bezier curve approximation
+    DATA(lv_k) = iv_radius * c_bezier_k.  " Bezier curve approximation
     DATA(lv_op) = get_style_operator( iv_style ).
 
     " Draw circle using 4 Bezier curves
