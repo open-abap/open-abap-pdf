@@ -3,7 +3,8 @@
     "files": ["/src/**/*.*", "/test/**/*.*"],
     "skipGeneratedGatewayClasses": true,
     "skipGeneratedPersistentClasses": true,
-    "skipGeneratedFunctionGroups": true
+    "skipGeneratedFunctionGroups": true,
+    "errorOnDuplicateFilenames": true
   },
   "syntax": {
     "version": "open-abap",
