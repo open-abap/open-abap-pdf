@@ -840,6 +840,7 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
     DATA lv_directory_pos TYPE i.
     DATA lv_table_pos TYPE i.
     DATA lv_tag TYPE string.
+    DATA lv_tag_data TYPE xstring.
     DATA lv_offset TYPE i.
     DATA lv_length TYPE i.
     DATA lv_cmap_offset TYPE i.
@@ -886,7 +887,8 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
 
     lv_directory_pos = 12.
     DO lv_num_tables TIMES.
-      lv_tag = cl_abap_codepage=>convert_from( cs_font-data+lv_directory_pos(4) ).
+      lv_tag_data = cs_font-data+lv_directory_pos(4).
+      lv_tag = cl_abap_codepage=>convert_from( lv_tag_data ).
       lv_table_pos = lv_directory_pos + 8.
       lv_offset = read_uint32(
         iv_data = cs_font-data
