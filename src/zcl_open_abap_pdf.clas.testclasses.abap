@@ -9,6 +9,8 @@ CLASS ltcl_pdf_test DEFINITION FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
     METHODS test_mm_to_pt FOR TESTING RAISING cx_static_check.
     METHODS test_inch_to_pt FOR TESTING RAISING cx_static_check.
     METHODS test_fluent_api FOR TESTING RAISING cx_static_check.
+    METHODS test_text_box FOR TESTING RAISING cx_static_check.
+    METHODS test_custom_font FOR TESTING RAISING cx_static_check.
 ENDCLASS.
 
 CLASS ltcl_pdf_test IMPLEMENTATION.
@@ -123,6 +125,49 @@ CLASS ltcl_pdf_test IMPLEMENTATION.
     cl_abap_unit_assert=>assert_char_cp(
       act = lv_result
       exp = '*(Red Text)*' ).
+  ENDMETHOD.
+
+  METHOD test_text_box.
+    DATA(lo_pdf) = zcl_open_abap_pdf=>create( ).
+    lo_pdf->add_page( iv_width = 200 iv_height = 100 ).
+    lo_pdf->set_font( iv_name = 'Helvetica' iv_size = 10 ).
+    lo_pdf->text_box(
+      iv_x = 10
+      iv_y = 10
+      iv_width = 80
+      iv_height = 20
+      iv_line_height = 10
+      iv_text = 'one two three four five six seven eight' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = lo_pdf->get_page_count( )
+      exp = 2 ).
+
+    DATA(lv_result) = lo_pdf->render( ).
+    cl_abap_unit_assert=>assert_char_cp(
+      act = lv_result
+      exp = '*/Count 2*' ).
+  ENDMETHOD.
+
+  METHOD test_custom_font.
+    " Small TrueType fixture: maps A to glyph 1 and has one horizontal metric.
+    DATA(lv_font_data) = CONV xstring( '00010000000500000000000068656164000000000000005C00000014686865610000000000000070000000246D617870000000000000009400000006686D7478000000000000009A00000008636D617000000000000000A20000002C00000000000000000000000000000000000003E8000000000320FF380000000000000000000000000000000000000000000000000000000100000000000201F400000000000000000001000300010000000C00040020000000040004000100000041FFFF00000041FFFFFFC0000000000000' ).
+    DATA(lo_pdf) = zcl_open_abap_pdf=>create( ).
+    lo_pdf->add_page( ).
+    lo_pdf->add_font( iv_name = 'TinyFont' iv_data = lv_font_data ).
+    lo_pdf->set_font( iv_name = 'TinyFont' iv_size = 12 ).
+    lo_pdf->text( iv_x = 20 iv_y = 20 iv_text = 'A' ).
+
+    DATA(lv_result) = lo_pdf->render( ).
+    cl_abap_unit_assert=>assert_char_cp(
+      act = lv_result
+      exp = '*/Subtype /Type0*' ).
+    cl_abap_unit_assert=>assert_char_cp(
+      act = lv_result
+      exp = '*<0001>*' ).
+    cl_abap_unit_assert=>assert_char_cp(
+      act = lv_result
+      exp = '*/Filter /ASCIIHexDecode*' ).
   ENDMETHOD.
 
 ENDCLASS.
