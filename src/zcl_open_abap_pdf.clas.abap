@@ -22,7 +22,18 @@ CLASS zcl_open_abap_pdf DEFINITION PUBLIC.
         height     TYPE f,
         content    TYPE string,
       END OF ty_page,
-      ty_pages TYPE STANDARD TABLE OF ty_page WITH DEFAULT KEY.
+      ty_pages TYPE STANDARD TABLE OF ty_page WITH DEFAULT KEY,
+
+      BEGIN OF ty_signature,
+        name          TYPE string,
+        reason        TYPE string,
+        location      TYPE string,
+        contact_info  TYPE string,
+        "! UTC, format YYYYMMDDhhmmss, default is the current time
+        signing_time  TYPE string,
+        "! Bytes reserved for the CMS signature, default 8192
+        contents_size TYPE i,
+      END OF ty_signature.
 
     CONSTANTS:
       c_pt_per_mm     TYPE f VALUE '2.83465',
@@ -116,6 +127,15 @@ CLASS zcl_open_abap_pdf DEFINITION PUBLIC.
     METHODS render_binary
       RETURNING VALUE(rv_pdf) TYPE xstring.
 
+    "! Render the PDF with a digital signature, invisible signature field on the first page
+    "! @parameter io_signer | Creates the CMS signature, eg. zcl_open_abap_pdf_signer
+    "! @parameter is_signature | Optional signature details
+    METHODS render_signed
+      IMPORTING io_signer     TYPE REF TO zif_open_abap_pdf_signer
+                is_signature  TYPE ty_signature OPTIONAL
+      RETURNING VALUE(rv_pdf) TYPE xstring
+      RAISING   zcx_open_abap_pdf.
+
     "! Get current page number
     METHODS get_page_count
       RETURNING VALUE(rv_count) TYPE i.
@@ -177,6 +197,19 @@ CLASS zcl_open_abap_pdf DEFINITION PUBLIC.
 
     METHODS append_to_page
       IMPORTING iv_content TYPE string.
+
+    "! Build the document, byte offsets are calculated on the UTF-8 encoded result
+    "! @parameter iv_signature | Signature dictionary, adds signature field if supplied
+    "! @parameter ev_signature_offset | Byte offset of the signature dictionary
+    METHODS serialize
+      IMPORTING iv_signature        TYPE string OPTIONAL
+      EXPORTING ev_signature_offset TYPE i
+      RETURNING VALUE(rv_pdf)       TYPE xstring.
+
+    METHODS replace_bytes
+      IMPORTING iv_offset TYPE i
+                iv_text   TYPE string
+      CHANGING  cv_pdf    TYPE xstring.
 ENDCLASS.
 
 CLASS zcl_open_abap_pdf IMPLEMENTATION.
@@ -321,7 +354,98 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD render.
-    DATA lv_pdf TYPE string.
+    rv_pdf = cl_abap_codepage=>convert_from( serialize( ) ).
+  ENDMETHOD.
+
+  METHOD render_binary.
+    rv_pdf = serialize( ).
+  ENDMETHOD.
+
+  METHOD render_signed.
+    CONSTANTS lc_byte_range TYPE string VALUE '/ByteRange [0 0000000000 0000000000 0000000000]'.
+    DATA ls_signature TYPE ty_signature.
+    DATA lv_timestamp TYPE p LENGTH 8 DECIMALS 0.
+    DATA lv_dictionary TYPE string.
+    DATA lv_dictionary_offset TYPE i.
+    DATA lv_byte_range_offset TYPE i.
+    DATA lv_contents_offset TYPE i.
+    DATA lv_contents_end TYPE i.
+    DATA lv_byte_range TYPE string.
+    DATA lv_data TYPE xstring.
+    DATA lv_rest TYPE xstring.
+    DATA lv_cms TYPE xstring.
+    DATA lv_hex TYPE string.
+
+    IF lines( mt_pages ) = 0.
+      zcx_open_abap_pdf=>raise( 'Signing requires at least one page' ).
+    ENDIF.
+
+    ls_signature = is_signature.
+    IF ls_signature-contents_size <= 0.
+      ls_signature-contents_size = 8192.
+    ENDIF.
+    IF ls_signature-signing_time IS INITIAL.
+      GET TIME STAMP FIELD lv_timestamp.
+      ls_signature-signing_time = |{ lv_timestamp }|.
+    ENDIF.
+    IF strlen( ls_signature-signing_time ) <> 14 OR ls_signature-signing_time CN '0123456789'.
+      zcx_open_abap_pdf=>raise( 'Signing time must be in format YYYYMMDDhhmmss' ).
+    ENDIF.
+
+* /ByteRange and /Contents come first and are ASCII only, so character offsets equal byte offsets
+    lv_dictionary = |<< /Type /Sig /Filter /Adobe.PPKLite /SubFilter /adbe.pkcs7.detached { lc_byte_range } | &&
+      |/Contents <{ repeat( val = '0' occ = 2 * ls_signature-contents_size ) }> /M (D:{ ls_signature-signing_time }Z)|.
+    IF ls_signature-name IS NOT INITIAL.
+      lv_dictionary = lv_dictionary && | /Name ({ escape_string( ls_signature-name ) })|.
+    ENDIF.
+    IF ls_signature-reason IS NOT INITIAL.
+      lv_dictionary = lv_dictionary && | /Reason ({ escape_string( ls_signature-reason ) })|.
+    ENDIF.
+    IF ls_signature-location IS NOT INITIAL.
+      lv_dictionary = lv_dictionary && | /Location ({ escape_string( ls_signature-location ) })|.
+    ENDIF.
+    IF ls_signature-contact_info IS NOT INITIAL.
+      lv_dictionary = lv_dictionary && | /ContactInfo ({ escape_string( ls_signature-contact_info ) })|.
+    ENDIF.
+    lv_dictionary = lv_dictionary && | >>|.
+
+    rv_pdf = serialize(
+      EXPORTING iv_signature        = lv_dictionary
+      IMPORTING ev_signature_offset = lv_dictionary_offset ).
+
+    lv_byte_range_offset = lv_dictionary_offset + find( val = lv_dictionary sub = '/ByteRange [' ).
+    lv_contents_offset = lv_dictionary_offset + find( val = lv_dictionary sub = '/Contents <' ) + strlen( `/Contents ` ).
+    lv_contents_end = lv_contents_offset + 2 * ls_signature-contents_size + 2.
+
+* the signature covers everything except the hex string including its angle brackets
+    lv_byte_range = |/ByteRange [0 { lv_contents_offset } { lv_contents_end } { xstrlen( rv_pdf ) - lv_contents_end }]|.
+    lv_byte_range = lv_byte_range && repeat( val = ` ` occ = strlen( lc_byte_range ) - strlen( lv_byte_range ) ).
+    replace_bytes(
+      EXPORTING iv_offset = lv_byte_range_offset
+                iv_text   = lv_byte_range
+      CHANGING  cv_pdf    = rv_pdf ).
+
+    lv_data = rv_pdf(lv_contents_offset).
+    lv_rest = rv_pdf+lv_contents_end.
+    CONCATENATE lv_data lv_rest INTO lv_data IN BYTE MODE.
+
+    lv_cms = io_signer->sign(
+      iv_data         = lv_data
+      iv_signing_time = ls_signature-signing_time ).
+    lv_hex = lv_cms.
+    IF strlen( lv_hex ) > 2 * ls_signature-contents_size.
+      zcx_open_abap_pdf=>raise( |Signature is { xstrlen( lv_cms ) } bytes, increase contents_size| ).
+    ENDIF.
+
+    replace_bytes(
+      EXPORTING iv_offset = lv_contents_offset + 1
+                iv_text   = lv_hex
+      CHANGING  cv_pdf    = rv_pdf ).
+  ENDMETHOD.
+
+  METHOD serialize.
+    DATA lv_pdf TYPE xstring.
+    DATA lv_bytes TYPE xstring.
     DATA lv_catalog_id TYPE i.
     DATA lv_pages_id TYPE i.
     DATA lv_page_ids TYPE string.
@@ -339,7 +463,13 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
     DATA lv_offset_str TYPE string.
     DATA lv_page_tabix TYPE i.
     DATA lv_obj_id TYPE i.
-    DATA lv_marker TYPE string.
+    DATA lv_header TYPE string.
+    DATA lv_signature_id TYPE i.
+    DATA lv_widget_id TYPE i.
+    DATA lv_annots TYPE string.
+    DATA lv_acroform TYPE string.
+
+    CLEAR ev_signature_offset.
 
     " Reset objects for fresh render
     CLEAR mt_objects.
@@ -364,10 +494,19 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
       ENDIF.
       lv_stream = lv_stream && ls_page-content.
 
-      lv_content_length = strlen( lv_stream ).
+      lv_content_length = xstrlen( cl_abap_codepage=>convert_to( lv_stream ) ).
       ls_page-content_id = add_object( |<< /Length { lv_content_length } >>\nstream\n{ lv_stream }\nendstream| ).
       MODIFY mt_pages FROM ls_page INDEX lv_page_tabix.
     ENDLOOP.
+
+    " Signature dictionary and invisible signature field, the widget is placed on the first page
+    IF iv_signature IS NOT INITIAL.
+      lv_signature_id = add_object( iv_signature ).
+      lv_widget_id = mv_next_obj_id.
+      add_object( |<< /Type /Annot /Subtype /Widget /FT /Sig /F 132 /Rect [0 0 0 0] /T (Signature1) | &&
+        |/V { lv_signature_id } 0 R /P { lv_widget_id + 1 } 0 R >>| ).
+      lv_acroform = | /AcroForm << /Fields [{ lv_widget_id } 0 R] /SigFlags 3 >>|.
+    ENDIF.
 
     " Build font resources string
     LOOP AT mt_fonts INTO ls_font.
@@ -380,7 +519,12 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
     " Add page objects
     lv_pages_id = mv_next_obj_id + lines( mt_pages ).
     LOOP AT mt_pages INTO ls_page.
-      lv_obj_id = add_object( |<< /Type /Page /Parent { lv_pages_id } 0 R /MediaBox [0 0 { format_number( ls_page-width ) } { format_number( ls_page-height ) }] /Contents { ls_page-content_id } 0 R /Resources << /Font << { lv_font_resources } >> >> >>| ).
+      IF sy-tabix = 1 AND lv_widget_id IS NOT INITIAL.
+        lv_annots = | /Annots [{ lv_widget_id } 0 R]|.
+      ELSE.
+        CLEAR lv_annots.
+      ENDIF.
+      lv_obj_id = add_object( |<< /Type /Page /Parent { lv_pages_id } 0 R /MediaBox [0 0 { format_number( ls_page-width ) } { format_number( ls_page-height ) }] /Contents { ls_page-content_id } 0 R /Resources << /Font << { lv_font_resources } >> >>{ lv_annots } >>| ).
 
       IF lv_page_ids IS NOT INITIAL.
         lv_page_ids = lv_page_ids && | |.
@@ -392,20 +536,26 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
     lv_pages_id = add_object( |<< /Type /Pages /Kids [{ lv_page_ids }] /Count { lines( mt_pages ) } >>| ).
 
     " Add catalog
-    lv_catalog_id = add_object( |<< /Type /Catalog /Pages { lv_pages_id } 0 R >>| ).
+    lv_catalog_id = add_object( |<< /Type /Catalog /Pages { lv_pages_id } 0 R{ lv_acroform } >>| ).
 
     " Build PDF header with binary marker (high-bit chars indicate binary content)
-    lv_marker = cl_abap_codepage=>convert_from( CONV xstring( 'C2B5C2B6' ) ).
-    lv_pdf = |%PDF-1.4\n%| && lv_marker && |\n|.
+    lv_pdf = cl_abap_codepage=>convert_to( |%PDF-1.4\n%| ).
+    lv_bytes = 'C2B5C2B60A'.
+    CONCATENATE lv_pdf lv_bytes INTO lv_pdf IN BYTE MODE.
 
-    " Write objects and track offsets
+    " Write objects and track byte offsets
     LOOP AT mt_objects INTO ls_object.
-      APPEND strlen( lv_pdf ) TO lt_offsets.
-      lv_pdf = lv_pdf && |{ ls_object-id } 0 obj\n{ ls_object-content }\nendobj\n|.
+      APPEND xstrlen( lv_pdf ) TO lt_offsets.
+      lv_header = |{ ls_object-id } 0 obj\n|.
+      IF ls_object-id = lv_signature_id.
+        ev_signature_offset = xstrlen( lv_pdf ) + strlen( lv_header ).
+      ENDIF.
+      lv_bytes = cl_abap_codepage=>convert_to( |{ lv_header }{ ls_object-content }\nendobj\n| ).
+      CONCATENATE lv_pdf lv_bytes INTO lv_pdf IN BYTE MODE.
     ENDLOOP.
 
     " Cross-reference table
-    lv_startxref = strlen( lv_pdf ).
+    lv_startxref = xstrlen( lv_pdf ).
     lv_obj_count = lines( mt_objects ) + 1.
     lv_xref = |xref\n0 { lv_obj_count }\n0000000000 65535 f \n|.
 
@@ -417,14 +567,22 @@ CLASS zcl_open_abap_pdf IMPLEMENTATION.
       lv_xref = lv_xref && |{ lv_offset_str } 00000 n \n|.
     ENDLOOP.
 
-    lv_pdf = lv_pdf && lv_xref.
-    lv_pdf = lv_pdf && |trailer\n<< /Size { lv_obj_count } /Root { lv_catalog_id } 0 R >>\nstartxref\n{ lv_startxref }\n%%EOF|.
-
-    rv_pdf = lv_pdf.
+    lv_xref = lv_xref && |trailer\n<< /Size { lv_obj_count } /Root { lv_catalog_id } 0 R >>\nstartxref\n{ lv_startxref }\n%%EOF|.
+    lv_bytes = cl_abap_codepage=>convert_to( lv_xref ).
+    CONCATENATE lv_pdf lv_bytes INTO rv_pdf IN BYTE MODE.
   ENDMETHOD.
 
-  METHOD render_binary.
-    rv_pdf = cl_abap_codepage=>convert_to( render( ) ).
+  METHOD replace_bytes.
+    DATA lv_bytes TYPE xstring.
+    DATA lv_before TYPE xstring.
+    DATA lv_after TYPE xstring.
+    DATA lv_end TYPE i.
+
+    lv_bytes = cl_abap_codepage=>convert_to( iv_text ).
+    lv_end = iv_offset + xstrlen( lv_bytes ).
+    lv_before = cv_pdf(iv_offset).
+    lv_after = cv_pdf+lv_end.
+    CONCATENATE lv_before lv_bytes lv_after INTO cv_pdf IN BYTE MODE.
   ENDMETHOD.
 
   METHOD get_page_count.

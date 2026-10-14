@@ -5,9 +5,10 @@ await initializeABAP();
 
 async function run() {
   const result = await abap.Classes["ZCL_PDF_DEMO"].run_base64();
-  console.dir(result);
   fs.writeFileSync(path.join(".", "demo.pdf"), Buffer.from(result.get(), "base64"));
-}
 
+  const signed = await abap.Classes["ZCL_PDF_DEMO"].run_signed_base64();
+  fs.writeFileSync(path.join(".", "demo_signed.pdf"), Buffer.from(signed.get(), "base64"));
+}
 
 run();
