@@ -19,6 +19,7 @@ Plan is to have the same code run on:
 - Fluent API for method chaining
 - Support for A4, Letter, and custom page sizes
 - Unit conversion helpers (mm to points, inches to points)
+- Digital signatures, X.509 certificate based, pure ABAP RSA and CMS
 
 ## Usage
 
@@ -94,6 +95,36 @@ lo_pdf->add_page(
   iv_height = zcl_open_abap_pdf=>mm_to_pt( 150 ) ).
 ```
 
+### Digital Signatures
+
+Cryptographic, certificate based signatures, implemented in plain ABAP: RSA PKCS#1 v1.5 with SHA-256, embedded as detached CMS / PKCS#7 (`/SubFilter /adbe.pkcs7.detached`). The signature covers the whole document and is placed in an invisible signature field on the first page.
+
+```abap
+DATA(lo_signer) = zcl_open_abap_pdf_signer=>create_from_pem(
+  iv_private_key  = lv_key_pem       " -----BEGIN PRIVATE KEY----- or RSA PRIVATE KEY, unencrypted
+  iv_certificates = lv_cert_pem ).   " signing certificate first, then optional chain
+
+DATA(lv_pdf) = zcl_open_abap_pdf=>create(
+  )->add_page(
+  )->text( iv_x = 50 iv_y = 50 iv_text = 'Signed document'
+  )->render_signed(
+    io_signer    = lo_signer
+    is_signature = VALUE #(
+      name     = 'John Doe'
+      reason   = 'Approval'
+      location = 'Copenhagen' ) ).
+```
+
+`zcl_open_abap_pdf_signer=>create( )` accepts DER encoded key (PKCS#1 or PKCS#8) and certificates instead of PEM. The certificate must match the private key, and the signature is verified with the public key before it is returned.
+
+Signing with other means, eg. SSF, an HSM or a remote signing service, is possible by implementing `zif_open_abap_pdf_signer`, which receives the bytes to sign and returns the DER encoded CMS SignedData.
+
+Notes:
+- Only RSA keys are supported, encrypted private keys are not supported
+- No timestamp authority (TSA) or long term validation information is added
+- The CMS is limited to `contents_size` bytes, default 8192, increase for long certificate chains
+- Viewers show the signature as valid only if the certificate is trusted, eg. issued by a trusted CA
+
 ## API Reference
 
 ### Class Methods
@@ -120,6 +151,7 @@ lo_pdf->add_page(
 | `circle( iv_x, iv_y, iv_radius, iv_style )` | Draws a circle |
 | `render( )` | Returns PDF as string |
 | `render_binary( )` | Returns PDF as xstring |
+| `render_signed( io_signer, is_signature )` | Returns digitally signed PDF as xstring |
 | `get_page_count( )` | Returns number of pages |
 | `get_page_width( )` | Returns current page width |
 | `get_page_height( )` | Returns current page height |
