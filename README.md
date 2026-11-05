@@ -1,6 +1,6 @@
 # open-abap-pdf
 
-Standalone PDF generation in ABAP
+Standalone PDF generation in ABAP, also see https://github.com/beraadim/zcl_pdf
 
 Pull requests welcome
 
